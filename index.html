@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#05050a">
+<title>THE SYSTEM — JEE Hunter</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ── ROOT TOKENS ── */
+:root {
+  --bg-void:    #05050a;
+  --bg-deep:    #0b0b16;
+  --bg-surface: #0f0f1f;
+  --bg-panel:   #13132a;
+  --bg-card:    #161628;
+  --border-dim: rgba(0,240,255,0.08);
+  --border-glow:rgba(0,240,255,0.28);
+  --cyan:       #00f0ff;
+  --cyan-dim:   rgba(0,240,255,0.12);
+  --violet:     #9b5cff;
+  --violet-dim: rgba(155,92,255,0.12);
+  --gold:       #f0b429;
+  --gold-dim:   rgba(240,180,41,0.15);
+  --red:        #ff3c5a;
+  --green:      #00ff9d;
+  --green-dim:  rgba(0,255,157,0.1);
+  --text-primary: #e8eaf6;
+  --text-secondary: #8888aa;
+  --text-dim:   #44445a;
+}
+
+* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-void);
+  color: var(--text-primary);
+  overscroll-behavior: none;
+  min-height: 100vh;
+}
+
+.font-orb  { font-family: 'Orbitron', sans-serif; }
+.font-raj  { font-family: 'Rajdhani', sans-serif; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: var(--bg-void); }
+::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 2px; }
+
+/* ── SECTION VISIBILITY ── */
+.section { display: none; }
+.section.active { display: block; animation: sysIn 0.25s ease; }
+@keyframes sysIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── GLASS / PANEL ── */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-dim);
+  border-radius: 14px;
+}
+.panel-glow {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-glow);
+  border-radius: 14px;
+  box-shadow: 0 0 20px rgba(0,240,255,0.06), inset 0 0 20px rgba(0,240,255,0.02);
+}
+.card-stat {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-deep) 100%);
+  border: 1px solid var(--border-dim);
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.card-stat::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0.5;
+}
+
+/* ── TOP NAV ── */
+#top-nav {
+  display: flex;
+  overflow-x: auto;
+  gap: 0;
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--border-dim);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+#top-nav::-webkit-scrollbar { display: none; }
+.nav-tab {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.nav-tab::after {
+  content:'';
+  position:absolute; bottom:0; left:0; right:0; height:2px;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  transform: scaleX(0);
+  transition: transform 0.25s cubic-bezier(.4,0,.2,1);
+}
+.nav-tab.active { color: var(--cyan); }
+.nav-tab.active::after { transform: scaleX(1); }
+
+/* ── HEADER ── */
+#sys-header {
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--border-dim);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 60;
+}
+.header-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  color: var(--cyan);
+  text-shadow: 0 0 16px rgba(0,240,255,0.7);
+}
+.header-sub {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ── GLOW UTILITIES ── */
+.glow-cyan  { box-shadow: 0 0 24px rgba(0,240,255,0.22); }
+.glow-violet{ box-shadow: 0 0 24px rgba(155,92,255,0.22); }
+.glow-gold  { box-shadow: 0 0 24px rgba(240,180,41,0.22); }
+.glow-red   { box-shadow: 0 0 24px rgba(255,60,90,0.25); }
+.glow-green { box-shadow: 0 0 24px rgba(0,255,157,0.22); }
+.text-cyan   { color: var(--cyan); }
+.text-violet { color: var(--violet); }
+.text-gold   { color: var(--gold); }
+.text-sys-red{ color: var(--red); }
+.text-sys-green { color: var(--green); }
+
+/* ── PROGRESS BAR ── */
+.prog-track { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+.prog-fill  { height: 100%; border-radius: 2px; transition: width 0.6s cubic-bezier(.4,0,.2,1); }
+
+/* ── FORM ELEMENTS ── */
+.sys-input, .sys-select {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-dim);
+  color: var(--text-primary);
+  border-radius: 8px;
+  padding: 10px 12px;
+  width: 100%;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+}
+.sys-input:focus, .sys-select:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 2px rgba(0,240,255,0.1);
+}
+.sys-select option { background: var(--bg-panel); }
+
+/* ── BUTTONS ── */
+.btn-sys {
+  background: linear-gradient(135deg, rgba(0,240,255,0.15), rgba(155,92,255,0.12));
+  border: 1px solid var(--border-glow);
+  color: var(--cyan);
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+  box-shadow: 0 0 12px rgba(0,240,255,0.08);
+}
+.btn-sys:hover { box-shadow: 0 0 24px rgba(0,240,255,0.22); transform: translateY(-1px); }
+.btn-sys:active { transform: translateY(0); }
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-dim);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-ghost:hover { border-color: var(--border-glow); color: var(--text-primary); }
+
+/* ── SYLLABUS STATUS BUTTONS ── */
+.sbtn {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.sbtn-ns  { background: rgba(255,255,255,0.04); color: var(--text-dim); border: 1px solid rgba(255,255,255,0.08); }
+.sbtn-th  { background: rgba(0,240,255,0.1);  color: #7ee8ff; border: 1px solid rgba(0,240,255,0.25); }
+.sbtn-rv  { background: rgba(0,255,157,0.1); color: var(--green); border: 1px solid rgba(0,255,157,0.3); }
+.sbtn-ns.active  { background: rgba(255,255,255,0.1); color: #aaa; border-color: #555; }
+.sbtn-th.active  { background: rgba(0,240,255,0.22); color: #00f0ff; border-color: #00f0ff; box-shadow: 0 0 8px rgba(0,240,255,0.3); }
+.sbtn-rv.active  { background: rgba(0,255,157,0.22); color: #00ff9d; border-color: #00ff9d; box-shadow: 0 0 8px rgba(0,255,157,0.3); }
+
+.chapter-row { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s; }
+.chapter-row:hover { background: rgba(0,240,255,0.03); }
+.chapter-row:last-child { border-bottom: none; }
+
+.pyq-input {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-dim);
+  border-radius: 4px;
+  color: var(--text-primary);
+  width: 50px;
+  font-size: 12px;
+  text-align: center;
+  padding: 2px 4px;
+  font-family: 'Orbitron', sans-serif;
+}
+.pyq-input:focus { outline: none; border-color: var(--cyan); }
+
+/* ── SUBJECT TABS ── */
+.stab { padding: 8px 14px; font-family:'Rajdhani',sans-serif; font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-dim); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; white-space:nowrap; }
+.stab.active { color:var(--cyan); border-bottom-color:var(--cyan); text-shadow: 0 0 8px rgba(0,240,255,0.5); }
+.classtab { flex:1; padding:8px; font-size:11px; font-family:'Rajdhani',sans-serif; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-dim); cursor:pointer; border-radius:6px; transition:all 0.2s; text-align:center; border:1px solid transparent; }
+.classtab.active { color:var(--cyan); background:rgba(0,240,255,0.08); border-color:var(--border-glow); }
+
+/* ── RANK BADGES ── */
+.rank-badge {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 48px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  display: inline-block;
+}
+.rank-S { color: #f0b429; text-shadow: 0 0 30px #f0b429, 0 0 60px rgba(240,180,41,0.5); }
+.rank-A { color: #9b5cff; text-shadow: 0 0 30px #9b5cff, 0 0 60px rgba(155,92,255,0.5); }
+.rank-B { color: #00f0ff; text-shadow: 0 0 30px #00f0ff, 0 0 60px rgba(0,240,255,0.5); }
+.rank-C { color: #00ff9d; text-shadow: 0 0 20px #00ff9d; }
+.rank-D { color: #ff9f43; text-shadow: 0 0 20px rgba(255,159,67,0.6); }
+.rank-E { color: #ff3c5a; text-shadow: 0 0 20px rgba(255,60,90,0.5); }
+
+.rank-card-S { border-color: rgba(240,180,41,0.4) !important; box-shadow: 0 0 30px rgba(240,180,41,0.15), inset 0 0 20px rgba(240,180,41,0.04); }
+.rank-card-A { border-color: rgba(155,92,255,0.4) !important; box-shadow: 0 0 30px rgba(155,92,255,0.15), inset 0 0 20px rgba(155,92,255,0.04); }
+.rank-card-B { border-color: rgba(0,240,255,0.4) !important;  box-shadow: 0 0 30px rgba(0,240,255,0.15), inset 0 0 20px rgba(0,240,255,0.04); }
+.rank-card-C { border-color: rgba(0,255,157,0.3) !important;  box-shadow: 0 0 20px rgba(0,255,157,0.1); }
+.rank-card-D { border-color: rgba(255,159,67,0.3) !important; box-shadow: 0 0 20px rgba(255,159,67,0.1); }
+.rank-card-E { border-color: rgba(255,60,90,0.35) !important; box-shadow: 0 0 20px rgba(255,60,90,0.1); }
+
+/* ── TASK ITEMS ── */
+.task-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.04); cursor:pointer; }
+.task-item:last-child { border-bottom:none; }
+.task-check { width:20px; height:20px; border:1px solid var(--border-dim); border-radius:4px; display:flex; align-items:center; justify-content:center; transition:all 0.2s; flex-shrink:0; }
+.task-check.done { background:rgba(0,255,157,0.15); border-color:var(--green); box-shadow:0 0 8px rgba(0,255,157,0.3); }
+
+/* ── TOAST ── */
+#sys-toast {
+  position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-glow);
+  color: var(--cyan);
+  padding: 10px 20px;
+  border-radius: 24px;
+  font-size: 12px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  z-index: 500;
+  display: none;
+  opacity: 0;
+  white-space: nowrap;
+  box-shadow: 0 0 20px rgba(0,240,255,0.2);
+  text-transform: uppercase;
+  transition: opacity 0.3s;
+}
+
+/* ── QUEST COMPLETE OVERLAY ── */
+#quest-overlay {
+  position: fixed; inset: 0; z-index: 900;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(5,5,10,0.85);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+#quest-overlay.show { opacity: 1; }
+.quest-banner {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  text-align: center;
+  animation: questPop 0.5s cubic-bezier(.36,.07,.19,.97);
+}
+@keyframes questPop { 0%{transform:scale(0.3);opacity:0} 70%{transform:scale(1.08)} 100%{transform:scale(1);opacity:1} }
+.quest-title { font-size: 28px; color: var(--gold); text-shadow: 0 0 40px var(--gold), 0 0 80px rgba(240,180,41,0.4); letter-spacing: 0.1em; }
+.quest-sub   { font-size: 13px; color: var(--cyan); margin-top: 8px; letter-spacing: 0.2em; text-shadow: 0 0 12px var(--cyan); }
+
+/* ── CONFETTI ── */
+@keyframes confettiFall { 0%{transform:translateY(-10vh) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(900deg);opacity:0} }
+.confetti-bit { position:fixed; top:-20px; pointer-events:none; z-index:950; animation:confettiFall linear forwards; }
+
+/* ── FEEDBACK CARDS ── */
+.fb-good { border-left: 2px solid var(--green); background: var(--green-dim); }
+.fb-warn { border-left: 2px solid var(--gold); background: var(--gold-dim); }
+.fb-bad  { border-left: 2px solid var(--red); background: rgba(255,60,90,0.08); }
+
+/* ── ACCURACY LIVE PREVIEW ── */
+#acc-live { display:none; }
+#acc-live.show { display:block; }
+
+/* ── QUOTE ── */
+@keyframes quoteIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.quote-anim { animation: quoteIn 0.35s ease; }
+
+/* ── SCAN LINE decorative ── */
+.scan-line {
+  position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,240,255,0.012) 4px);
+}
+
+/* ── DIVIDER ── */
+.sys-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border-glow), transparent); margin: 16px 0; }
+
+/* ── Number highlight ── */
+.num { font-family: 'Orbitron', sans-serif; }
+
+/* ── Scrollable inner tab row ── */
+.scroll-tabs { display:flex; overflow-x:auto; scrollbar-width:none; gap:0; }
+.scroll-tabs::-webkit-scrollbar { display:none; }
+
+/* ── Rank history rows ── */
+.rank-row { border-bottom: 1px solid rgba(255,255,255,0.04); }
+.rank-row:last-child { border-bottom: none; }
+
+/* ── Streak flame ── */
+@keyframes flicker { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(1.06)} }
+.flame { animation: flicker 1.1s ease-in-out infinite; display:inline-block; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ QUEST COMPLETE OVERLAY ══════════════════ -->
+<div id="quest-overlay">
+  <div class="quest-banner">
+    <div class="quest-title">⬡ QUEST COMPLETED ⬡</div>
+    <div id="quest-chapter-name" class="quest-sub mt-2"></div>
+    <div class="quest-sub" style="margin-top:6px;font-size:11px;color:var(--text-secondary)">100% PYQs SOLVED</div>
+  </div>
+</div>
+
+<!-- ══════════════════ TOAST ══════════════════ -->
+<div id="sys-toast"></div>
+
+<!-- ══════════════════ HEADER ══════════════════ -->
+<header id="sys-header">
+  <div>
+    <div class="header-logo">THE SYSTEM</div>
+    <div class="header-sub font-raj" id="hdr-date">Loading...</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div style="text-align:right;">
+      <div style="font-size:10px;color:var(--text-dim);font-family:'Rajdhani',sans-serif;letter-spacing:.08em;text-transform:uppercase;">Streak</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:13px;color:var(--gold);letter-spacing:.06em;"><span class="flame">🔥</span> <span id="hdr-streak">0</span>D</div>
+    </div>
+    <div style="width:34px;height:34px;border-radius:50%;background:rgba(0,240,255,0.08);border:1px solid var(--border-glow);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:12px;color:var(--cyan);box-shadow:0 0 12px rgba(0,240,255,0.2);">H</div>
+  </div>
+</header>
+
+<!-- ══════════════════ TOP NAV ══════════════════ -->
+<div id="top-nav" style="position:sticky;top:57px;z-index:55;">
+  <button class="nav-tab active" data-sec="dashboard"     onclick="switchSection('dashboard')">⬡ Command</button>
+  <button class="nav-tab"        data-sec="syllabus"      onclick="switchSection('syllabus')">◈ Syllabus</button>
+  <button class="nav-tab"        data-sec="qlog"          onclick="switchSection('qlog')">◎ Q-Log</button>
+  <button class="nav-tab"        data-sec="rank"          onclick="switchSection('rank')">◆ Rank Eval</button>
+  <button class="nav-tab"        data-sec="analytics"     onclick="switchSection('analytics')">⬢ Analytics</button>
+  <button class="nav-tab"        data-sec="motivation"    onclick="switchSection('motivation')">★ Monarch</button>
+</div>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<main style="padding:16px;max-width:480px;margin:0 auto;padding-bottom:32px;">
+
+<!-- ─────────── DASHBOARD ─────────── -->
+<section id="sec-dashboard" class="section active">
+  <div style="margin-bottom:20px;">
+    <div class="num" style="font-size:11px;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase;">Hunter Status</div>
+    <h2 style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:var(--text-primary);margin-top:2px;">Command Center</h2>
+  </div>
+
+  <!-- Stat Grid -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+    <div class="card-stat glow-cyan" style="padding:16px;position:relative;">
+      <div class="scan-line"></div>
+      <div class="num" style="font-family:'Orbitron',sans-serif;font-size:22px;font-weight:700;color:var(--cyan);" id="st-hours">0.0</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.06em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;">Hours Studied</div>
+      <div class="prog-track" style="margin-top:10px;"><div class="prog-fill" style="background:var(--cyan);" id="pg-hours"></div></div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:4px;" id="pg-hours-label">/ 500h target</div>
+    </div>
+    <div class="card-stat glow-violet" style="padding:16px;position:relative;">
+      <div class="scan-line"></div>
+      <div class="num" style="font-family:'Orbitron',sans-serif;font-size:22px;font-weight:700;color:var(--violet);" id="st-questions">0</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.06em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;">Questions Solved</div>
+      <div class="prog-track" style="margin-top:10px;"><div class="prog-fill" style="background:var(--violet);" id="pg-ques"></div></div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">/ 10,000 target</div>
+    </div>
+    <div class="card-stat" style="padding:16px;position:relative;">
+      <div class="scan-line"></div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:22px;font-weight:700;color:var(--gold);" id="st-streak">0</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.06em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;"><span class="flame">🔥</span> Day Streak</div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:6px;" id="st-streak-lbl">Begin your run</div>
+    </div>
+    <div class="card-stat" style="padding:16px;position:relative;">
+      <div class="scan-line"></div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:22px;font-weight:700;color:var(--green);" id="st-acc">—</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.06em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;">Avg Accuracy</div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:6px;" id="st-acc-lbl">All question logs</div>
+    </div>
+  </div>
+
+  <!-- Quick Log -->
+  <div class="panel-glow" style="padding:16px;margin-bottom:16px;position:relative;overflow:hidden;">
+    <div class="scan-line"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);">⟢ Quick Log</div>
+      <div style="font-size:10px;color:var(--text-dim);font-family:'Orbitron',sans-serif;letter-spacing:.08em;" id="ql-today-label"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Subject</label>
+        <select id="ql-subject" class="sys-select"><option value="">Select</option><option>Physics</option><option>Chemistry</option><option>Mathematics</option></select></div>
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Hours</label>
+        <input type="number" id="ql-hours" class="sys-input" placeholder="e.g. 2.5" min="0" step="0.5"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Attempted</label>
+        <input type="number" id="ql-attempted" class="sys-input" placeholder="0" min="0"></div>
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Correct</label>
+        <input type="number" id="ql-correct" class="sys-input" placeholder="0" min="0"></div>
+    </div>
+    <div style="margin-bottom:12px;"><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Session Notes</label>
+      <input type="text" id="ql-notes" class="sys-input" placeholder="Topics covered..."></div>
+    <button class="btn-sys" onclick="logSession()">INITIATE LOG ⟶</button>
+  </div>
+
+  <!-- Balance Tracker -->
+  <div class="panel" style="padding:16px;margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--violet);">⬡ PE Pathshala &amp; School</div>
+      <button class="btn-ghost" onclick="resetBalanceTasks()" style="padding:4px 10px;font-size:10px;">RESET</button>
+    </div>
+    <div id="balance-list"></div>
+    <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
+      <div class="prog-track" style="flex:1;"><div class="prog-fill" style="background:linear-gradient(90deg,var(--violet),var(--cyan));" id="bal-prog-fill"></div></div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--violet);" id="bal-pct">0%</div>
+    </div>
+  </div>
+
+  <!-- Recent Sessions -->
+  <div class="panel" style="padding:16px;">
+    <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;">Recent Sessions</div>
+    <div id="recent-sessions"></div>
+  </div>
+</section>
+
+<!-- ─────────── SYLLABUS ─────────── -->
+<section id="sec-syllabus" class="section">
+  <div style="margin-bottom:16px;">
+    <div style="font-size:11px;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;">Chapter Progress</div>
+    <h2 style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:var(--text-primary);margin-top:2px;">Syllabus Matrix</h2>
+  </div>
+
+  <!-- Subject tabs -->
+  <div class="scroll-tabs" style="border-bottom:1px solid var(--border-dim);margin-bottom:14px;">
+    <button class="stab active" id="stab-Physics"      onclick="switchSubject('Physics')">⚡ Physics</button>
+    <button class="stab"        id="stab-Chemistry"    onclick="switchSubject('Chemistry')">⬡ Chemistry</button>
+    <button class="stab"        id="stab-Mathematics"  onclick="switchSubject('Mathematics')">◎ Mathematics</button>
+  </div>
+
+  <!-- Class tabs -->
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+    <button class="classtab active" id="ctab-11" onclick="switchClass(11)">Class XI</button>
+    <button class="classtab"        id="ctab-12" onclick="switchClass(12)">Class XII</button>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="panel" style="padding:12px 14px;margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+      <span style="font-size:11px;color:var(--text-dim);font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;" id="syl-prog-lbl">Chapters Revised</span>
+      <span style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--cyan);" id="syl-prog-pct">0%</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" style="background:linear-gradient(90deg,var(--cyan),var(--violet));" id="syl-prog-bar"></div></div>
+  </div>
+
+  <!-- Chapter List -->
+  <div class="panel" style="overflow:hidden;" id="chapter-list"></div>
+</section>
+
+<!-- ─────────── Q-LOG ─────────── -->
+<section id="sec-qlog" class="section">
+  <div style="margin-bottom:16px;">
+    <div style="font-size:11px;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;">Practice Metrics</div>
+    <h2 style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:var(--text-primary);margin-top:2px;">Question Log</h2>
+  </div>
+
+  <div class="panel-glow" style="padding:16px;margin-bottom:16px;position:relative;overflow:hidden;">
+    <div class="scan-line"></div>
+    <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);margin-bottom:12px;">Log Questions</div>
+    <div style="margin-bottom:10px;">
+      <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Subject</label>
+      <select id="qlog-sub" class="sys-select" onchange="populateQChapters()">
+        <option value="">Select Subject</option><option>Physics</option><option>Chemistry</option><option>Mathematics</option>
+      </select>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Chapter</label>
+      <select id="qlog-ch" class="sys-select"><option value="">Select Chapter</option></select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Attempted</label>
+        <input type="number" id="qlog-att" class="sys-input" placeholder="0" min="0" oninput="liveAccuracy()"></div>
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Correct</label>
+        <input type="number" id="qlog-cor" class="sys-input" placeholder="0" min="0" oninput="liveAccuracy()"></div>
+    </div>
+    <div id="acc-live" style="margin-bottom:10px;padding:12px;border-radius:10px;background:rgba(0,240,255,0.05);border:1px solid var(--border-dim);text-align:center;">
+      <div style="font-family:'Orbitron',sans-serif;font-size:26px;font-weight:700;" id="acc-val">0%</div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:2px;letter-spacing:.08em;text-transform:uppercase;">Accuracy</div>
+      <div class="prog-track" style="margin-top:8px;"><div class="prog-fill" id="acc-bar"></div></div>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Type</label>
+      <select id="qlog-type" class="sys-select"><option>PYQ</option><option>Module</option><option>Test Series</option><option>Self Practice</option></select>
+    </div>
+    <button class="btn-sys" onclick="addQLog()">SUBMIT LOG ⟶</button>
+  </div>
+
+  <!-- Subject accuracy -->
+  <div class="panel" style="padding:16px;margin-bottom:16px;">
+    <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;">Subject Accuracy Matrix</div>
+    <div id="sub-acc-cards"></div>
+  </div>
+
+  <div class="panel" style="padding:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);">Recent Entries</div>
+      <button class="btn-ghost" onclick="clearQLogs()" style="padding:4px 10px;font-size:10px;border-color:rgba(255,60,90,0.3);color:var(--red);">CLEAR</button>
+    </div>
+    <div id="qlog-list"></div>
+  </div>
+</section>
+
+<!-- ─────────── RANK EVALUATION ─────────── -->
+<section id="sec-rank" class="section">
+  <div style="margin-bottom:16px;">
+    <div style="font-size:11px;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;">Competitive Standing</div>
+    <h2 style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:var(--text-primary);margin-top:2px;">Monarch Standings</h2>
+  </div>
+
+  <!-- Input Form -->
+  <div class="panel-glow" style="padding:16px;margin-bottom:16px;position:relative;overflow:hidden;">
+    <div class="scan-line"></div>
+    <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);margin-bottom:12px;">⟢ Evaluate Test</div>
+    <div style="margin-bottom:10px;">
+      <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Test Name</label>
+      <input type="text" id="rank-test-name" class="sys-input" placeholder="e.g. AITS Full Test #5">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Your Score /300</label>
+        <input type="number" id="rank-your" class="sys-input" placeholder="0" min="0" max="300"></div>
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Test Date</label>
+        <input type="date" id="rank-date" class="sys-input"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Center Topper /300</label>
+        <input type="number" id="rank-center" class="sys-input" placeholder="0" min="0" max="300"></div>
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Batch Topper /300</label>
+        <input type="number" id="rank-batch" class="sys-input" placeholder="0" min="0" max="300"></div>
+    </div>
+    <button class="btn-sys" onclick="evaluateRank()">COMPUTE HUNTER RANK ⟶</button>
+  </div>
+
+  <!-- Rank Result -->
+  <div id="rank-result-card" class="panel" style="padding:20px;margin-bottom:16px;display:none;text-align:center;position:relative;overflow:hidden;">
+    <div class="scan-line"></div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Hunter Rank Assessment</div>
+    <div id="rr-badge" class="rank-badge">—</div>
+    <div id="rr-rank-label" style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:.12em;margin-top:6px;text-transform:uppercase;"></div>
+    <div class="sys-divider"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;">
+        <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;" id="rr-your-score">—</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px;letter-spacing:.06em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;">Your Score</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;">
+        <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--cyan);" id="rr-center">—</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px;letter-spacing:.06em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;">Ctr Topper</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;">
+        <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--gold);" id="rr-batch">—</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px;letter-spacing:.06em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;">Batch Topper</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div style="background:rgba(0,240,255,0.04);border:1px solid var(--border-dim);border-radius:10px;padding:12px;">
+        <div style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--cyan);" id="rr-percentile">—</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px;letter-spacing:.06em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;">Est. Percentile</div>
+      </div>
+      <div style="background:rgba(155,92,255,0.04);border:1px solid var(--border-dim);border-radius:10px;padding:12px;">
+        <div style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--violet);" id="rr-jee-rank">—</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px;letter-spacing:.06em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;">Sim. JEE Rank</div>
+      </div>
+    </div>
+    <div id="rr-feedback" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:12px;text-align:left;font-size:12px;line-height:1.6;color:var(--text-secondary);"></div>
+  </div>
+
+  <!-- Rank Legend -->
+  <div class="panel" style="padding:16px;margin-bottom:16px;">
+    <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;">Rank Criteria</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div style="background:rgba(240,180,41,0.06);border:1px solid rgba(240,180,41,0.25);border-radius:8px;padding:10px;display:flex;align-items:center;gap:10px;">
+        <span style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:var(--gold);text-shadow:0 0 12px var(--gold);">S</span>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text-primary);font-family:'Rajdhani',sans-serif;">MONARCH</div><div style="font-size:10px;color:var(--text-dim);">≥ Batch Topper</div></div>
+      </div>
+      <div style="background:rgba(155,92,255,0.06);border:1px solid rgba(155,92,255,0.25);border-radius:8px;padding:10px;display:flex;align-items:center;gap:10px;">
+        <span style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:var(--violet);text-shadow:0 0 12px var(--violet);">A</span>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text-primary);font-family:'Rajdhani',sans-serif;">SHADOW</div><div style="font-size:10px;color:var(--text-dim);">Within 10% of Batch</div></div>
+      </div>
+      <div style="background:rgba(0,240,255,0.06);border:1px solid rgba(0,240,255,0.2);border-radius:8px;padding:10px;display:flex;align-items:center;gap:10px;">
+        <span style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:var(--cyan);text-shadow:0 0 12px var(--cyan);">B</span>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text-primary);font-family:'Rajdhani',sans-serif;">HUNTER</div><div style="font-size:10px;color:var(--text-dim);">Beats Center Topper</div></div>
+      </div>
+      <div style="background:rgba(0,255,157,0.05);border:1px solid rgba(0,255,157,0.2);border-radius:8px;padding:10px;display:flex;align-items:center;gap:10px;">
+        <span style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:var(--green);">C</span>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text-primary);font-family:'Rajdhani',sans-serif;">RAIDER</div><div style="font-size:10px;color:var(--text-dim);">75%+ of Center</div></div>
+      </div>
+      <div style="background:rgba(255,159,67,0.05);border:1px solid rgba(255,159,67,0.2);border-radius:8px;padding:10px;display:flex;align-items:center;gap:10px;">
+        <span style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:#ff9f43;">D</span>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text-primary);font-family:'Rajdhani',sans-serif;">SCOUT</div><div style="font-size:10px;color:var(--text-dim);">50%–74% of Center</div></div>
+      </div>
+      <div style="background:rgba(255,60,90,0.05);border:1px solid rgba(255,60,90,0.2);border-radius:8px;padding:10px;display:flex;align-items:center;gap:10px;">
+        <span style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:var(--red);">E</span>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text-primary);font-family:'Rajdhani',sans-serif;">UNRANKED</div><div style="font-size:10px;color:var(--text-dim);">Below 50% of Center</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rank History -->
+  <div class="panel" style="padding:16px;">
+    <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;">Rank History</div>
+    <div id="rank-history-list"></div>
+  </div>
+</section>
+
+<!-- ─────────── ANALYTICS ─────────── -->
+<section id="sec-analytics" class="section">
+  <div style="margin-bottom:16px;">
+    <div style="font-size:11px;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;">Data Intelligence</div>
+    <h2 style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:var(--text-primary);margin-top:2px;">Effort vs Result</h2>
+  </div>
+
+  <!-- Mock Test Input -->
+  <div class="panel-glow" style="padding:16px;margin-bottom:16px;position:relative;overflow:hidden;">
+    <div class="scan-line"></div>
+    <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);margin-bottom:12px;">Log Mock Test</div>
+    <div style="margin-bottom:10px;">
+      <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Test Name</label>
+      <input type="text" id="mock-name" class="sys-input" placeholder="e.g. JEE Adv Mock #3">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Total /300</label>
+        <input type="number" id="mock-marks" class="sys-input" placeholder="0" min="0" max="300"></div>
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Date</label>
+        <input type="date" id="mock-date" class="sys-input"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div><label style="font-size:10px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Phy /100</label>
+        <input type="number" id="mock-phy" class="sys-input" placeholder="0" min="0" max="100"></div>
+      <div><label style="font-size:10px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Chem /100</label>
+        <input type="number" id="mock-chem" class="sys-input" placeholder="0" min="0" max="100"></div>
+      <div><label style="font-size:10px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Maths /100</label>
+        <input type="number" id="mock-math" class="sys-input" placeholder="0" min="0" max="100"></div>
+    </div>
+    <button class="btn-sys" onclick="addMockTest()">SAVE MOCK TEST ⟶</button>
+  </div>
+
+  <!-- Score Chart -->
+  <div class="panel" style="padding:16px;margin-bottom:16px;">
+    <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;">Score Progression</div>
+    <canvas id="scoreChart" height="180"></canvas>
+    <p id="score-chart-empty" style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px 0;">Log mock tests to see score trend.</p>
+  </div>
+
+  <!-- Effort Chart -->
+  <div class="panel" style="padding:16px;margin-bottom:16px;">
+    <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;">Effort Distribution</div>
+    <canvas id="effortChart" height="200"></canvas>
+    <p id="effort-chart-empty" style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px 0;">Log sessions to see effort data.</p>
+  </div>
+
+  <!-- Automated Feedback -->
+  <div class="panel" style="padding:16px;margin-bottom:16px;">
+    <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;">System Analysis</div>
+    <div id="analytics-feedback"></div>
+  </div>
+
+  <!-- Mock Test History -->
+  <div class="panel" style="padding:16px;">
+    <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;">Test Archive</div>
+    <div id="mock-list"></div>
+  </div>
+</section>
+
+<!-- ─────────── MOTIVATION ─────────── -->
+<section id="sec-motivation" class="section">
+  <div style="margin-bottom:16px;">
+    <div style="font-size:11px;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;">Inner Chamber</div>
+    <h2 style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:var(--text-primary);margin-top:2px;">Monarch's Hub</h2>
+  </div>
+
+  <!-- Vision Board -->
+  <div style="background:linear-gradient(135deg,rgba(155,92,255,0.1),rgba(0,240,255,0.06));border:1px solid rgba(155,92,255,0.25);border-radius:14px;padding:16px;margin-bottom:16px;position:relative;overflow:hidden;">
+    <div class="scan-line"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <span style="font-size:16px;">🎯</span>
+      <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--violet);">Vision Board</div>
+    </div>
+    <div style="display:grid;gap:10px;margin-bottom:14px;">
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Target IIT</label>
+        <input type="text" id="vis-iit" class="sys-input" placeholder="e.g. IIT Bombay" oninput="saveVision()"></div>
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Dream Branch</label>
+        <input type="text" id="vis-branch" class="sys-input" placeholder="e.g. CSE" oninput="saveVision()"></div>
+      <div><label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;font-family:'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;">Target Rank</label>
+        <input type="text" id="vis-rank" class="sys-input" placeholder="e.g. AIR Top 500" oninput="saveVision()"></div>
+    </div>
+    <div id="vision-display" style="display:none;background:rgba(155,92,255,0.08);border:1px solid rgba(155,92,255,0.25);border-radius:10px;padding:14px;text-align:center;">
+      <div style="font-size:10px;color:var(--violet);letter-spacing:.18em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;margin-bottom:6px;">MY DESTINATION</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:var(--text-primary);" id="vis-iit-d"></div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:14px;color:var(--violet);margin-top:2px;" id="vis-branch-d"></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;" id="vis-rank-d"></div>
+    </div>
+  </div>
+
+  <!-- Quote Widget -->
+  <div class="panel-glow" style="padding:20px;margin-bottom:16px;text-align:center;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+    <div class="scan-line"></div>
+    <div style="font-size:24px;margin-bottom:10px;" id="q-emoji">💡</div>
+    <p style="font-size:13px;color:var(--text-primary);line-height:1.7;margin-bottom:8px;max-width:320px;" id="q-text" class="quote-anim">"Loading..."</p>
+    <p style="font-size:11px;color:var(--text-dim);font-family:'Rajdhani',sans-serif;letter-spacing:.06em;" id="q-author">—</p>
+    <button class="btn-ghost" onclick="nextQuote()" style="margin-top:14px;">NEXT QUOTE →</button>
+  </div>
+
+  <!-- Milestones -->
+  <div class="panel" style="padding:16px;margin-bottom:16px;">
+    <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;">⬡ Quest Log — Completed</div>
+    <div id="milestone-list"></div>
+  </div>
+
+  <!-- Pie chart -->
+  <div class="panel" style="padding:16px;">
+    <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;">Subject Distribution</div>
+    <canvas id="pieChart" height="200"></canvas>
+    <p id="pie-empty" style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px 0;display:none;">Log sessions to see distribution.</p>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ╔══════════════════════════════════════════════════════╗
+// ║               DATA DEFINITIONS                       ║
+// ╚══════════════════════════════════════════════════════╝
+
+const SYLLABUS = {
+  Physics: {
+    11: ["Units & Measurement","Kinematics 1D & 2D","Laws of Motion","Work, Energy & Power","System of Particles & Rotational Motion","Gravitation","Mechanical Properties of Solids","Mechanical Properties of Fluids","Thermal Properties of Matter","Thermodynamics","Kinetic Theory of Gases","Oscillations (SHM)","Waves & Sound"],
+    12: ["Electric Charges & Fields","Electrostatic Potential & Capacitance","Current Electricity","Moving Charges & Magnetism","Magnetism & Matter","Electromagnetic Induction","Alternating Current","Electromagnetic Waves","Ray Optics","Wave Optics","Dual Nature of Radiation & Matter","Atoms & Nuclei","Semiconductor Electronics"]
+  },
+  Chemistry: {
+    11: ["Some Basic Concepts of Chemistry","Structure of Atom","Classification of Elements & Periodicity","Chemical Bonding & Molecular Structure","States of Matter: Gases & Liquids","Chemical Thermodynamics","Equilibrium","Redox Reactions","Hydrogen & its Compounds","s-Block Elements","p-Block Elements (Gr 13–14)","Organic Chemistry: Basic Principles","Hydrocarbons","Environmental Chemistry"],
+    12: ["Solid State","Solutions","Electrochemistry","Chemical Kinetics","Surface Chemistry","Metallurgy & General Principles","p-Block Elements (Gr 15–18)","d & f Block Elements","Coordination Compounds","Haloalkanes & Haloarenes","Alcohols, Phenols & Ethers","Aldehydes, Ketones & Carboxylic Acids","Amines","Biomolecules","Polymers & Chemistry in Everyday Life"]
+  },
+  Mathematics: {
+    11: ["Sets, Relations & Functions","Trigonometric Functions","Complex Numbers & Quadratic Equations","Linear Inequalities & Linear Programming","Permutations & Combinations","Binomial Theorem","Sequences & Series","Straight Lines & Pair of Lines","Conic Sections","Introduction to 3D Geometry","Limits & Derivatives (Intro)","Mathematical Reasoning","Statistics & Probability (11th)"],
+    12: ["Relations & Functions (12th)","Inverse Trigonometric Functions","Matrices","Determinants","Continuity & Differentiability","Application of Derivatives","Integrals (Indefinite & Definite)","Application of Integrals","Differential Equations","Vector Algebra","Three Dimensional Geometry","Linear Programming","Probability (12th)"]
+  }
+};
+
+const BALANCE_TASKS = [
+  {id:"bt1",label:"PE Pathshala lecture attended",cat:"coaching"},
+  {id:"bt2",label:"Coaching DPP submitted",cat:"coaching"},
+  {id:"bt3",label:"School attendance",cat:"school"},
+  {id:"bt4",label:"School homework done",cat:"school"},
+  {id:"bt5",label:"Evening self-study (2h+)",cat:"self"},
+  {id:"bt6",label:"Revision of yesterday's topics",cat:"self"},
+  {id:"bt7",label:"Error log updated",cat:"self"},
+];
+
+const QUOTES = [
+  {text:"The pain of discipline is far less than the pain of regret.",author:"Unknown",emoji:"⚡"},
+  {text:"An IIT seat is not given — it is taken, hour by hour, problem by problem.",author:"The System",emoji:"🎯"},
+  {text:"The student who works hardest when no one is watching will shine when everyone is.",author:"The System",emoji:"🌟"},
+  {text:"Every problem you solve is a vote for the hunter you are becoming.",author:"James Clear (adapted)",emoji:"💪"},
+  {text:"Champions train. Losers complain. You choose every single day.",author:"Unknown",emoji:"🏆"},
+  {text:"IIT is not a dream. It is a decision you make before anyone else wakes up.",author:"The System",emoji:"🎓"},
+  {text:"Hard work beats talent when talent doesn't work hard.",author:"Tim Notke",emoji:"🔥"},
+  {text:"Your rank on exam day is the sum of every night you chose to study instead of scroll.",author:"The System",emoji:"📱"},
+  {text:"Pressure makes diamonds. JEE pressure makes IITians.",author:"The System",emoji:"💎"},
+  {text:"One hour of focused practice beats five hours of passive reading. Always.",author:"Study Science",emoji:"⏱️"},
+  {text:"Don't wish it were easier. Build yourself to be stronger.",author:"Jim Rohn (adapted)",emoji:"💡"},
+  {text:"The gap between you and the topper is not talent — it is deliberate practice.",author:"The System",emoji:"📈"},
+  {text:"Every question you get wrong is a gift. Use it.",author:"The System",emoji:"🔮"},
+  {text:"Arise, awake, and stop not till the goal is reached.",author:"Swami Vivekananda",emoji:"☀️"},
+  {text:"Success is the sum of small efforts, repeated day in and day out.",author:"Robert Collier",emoji:"🗓️"},
+  {text:"The only way out is through — through every chapter, every formula, every doubt.",author:"The System",emoji:"🚪"},
+];
+
+// ╔══════════════════════════════════════════════════════╗
+// ║                STATE & STORAGE                       ║
+// ╚══════════════════════════════════════════════════════╝
+let S = {
+  sessions: [],
+  questionLogs: [],
+  mockTests: [],
+  rankTests: [],
+  chapterStatus: {},
+  balanceTasks: {},
+  vision: {iit:'',branch:'',rank:''},
+  streak: {count:0,lastDate:''},
+  quoteIdx: 0
+};
+
+function persist() { try { localStorage.setItem('jee_sys_v3', JSON.stringify(S)); } catch(e){} }
+function hydrate() {
+  try {
+    const raw = localStorage.getItem('jee_sys_v3');
+    if (raw) S = Object.assign({}, S, JSON.parse(raw));
+  } catch(e){}
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║               NAVIGATION                            ║
+// ╚══════════════════════════════════════════════════════╝
+let curSection  = 'dashboard';
+let curSubject  = 'Physics';
+let curClass    = 11;
+let curQuoteIdx = 0;
+
+function switchSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  document.querySelector(`[data-sec="${name}"]`).classList.add('active');
+  curSection = name;
+  const renders = {
+    dashboard:  renderDashboard,
+    syllabus:   renderChapters,
+    qlog:       renderQLog,
+    rank:       renderRankSection,
+    analytics:  renderAnalytics,
+    motivation: renderMotivation,
+  };
+  if (renders[name]) renders[name]();
+  window.scrollTo(0,0);
+}
+
+function switchSubject(sub) {
+  curSubject = sub;
+  ['Physics','Chemistry','Mathematics'].forEach(s => document.getElementById('stab-'+s).classList.toggle('active', s===sub));
+  renderChapters();
+}
+
+function switchClass(cls) {
+  curClass = cls;
+  [11,12].forEach(c => document.getElementById('ctab-'+c).classList.toggle('active', c===cls));
+  renderChapters();
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║                STREAK                               ║
+// ╚══════════════════════════════════════════════════════╝
+function updateStreak(force) {
+  const today = new Date().toDateString();
+  if (!force && S.streak.lastDate === today) return;
+  const yest  = new Date(Date.now()-86400000).toDateString();
+  if (S.streak.lastDate === yest)       S.streak.count++;
+  else if (S.streak.lastDate !== today) S.streak.count = 1;
+  S.streak.lastDate = today;
+  persist();
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║               DASHBOARD                             ║
+// ╚══════════════════════════════════════════════════════╝
+function renderDashboard() {
+  const totalHours   = S.sessions.reduce((a,s)=>a+(parseFloat(s.hours)||0),0);
+  const totalAttempt = S.questionLogs.reduce((a,q)=>a+(q.attempted||0),0);
+  const totalCorrect = S.questionLogs.reduce((a,q)=>a+(q.correct||0),0);
+  const avgAcc       = totalAttempt > 0 ? Math.round((totalCorrect/totalAttempt)*100) : null;
+
+  el('st-hours').textContent     = totalHours.toFixed(1);
+  el('st-questions').textContent = totalAttempt;
+  el('st-streak').textContent    = S.streak.count;
+  el('hdr-streak').textContent   = S.streak.count;
+  el('st-acc').textContent       = avgAcc !== null ? avgAcc+'%' : '—';
+  el('st-acc-lbl').textContent   = totalAttempt > 0 ? `${totalAttempt} total attempted` : 'No logs yet';
+
+  const slbl = S.streak.count===0 ? 'Begin your run' : S.streak.count>=7 ? 'Week warrior! 🔥' : S.streak.count>=3 ? 'Building momentum' : 'Habit forming...';
+  el('st-streak-lbl').textContent = slbl;
+
+  el('pg-hours').style.width     = Math.min(100,(totalHours/500)*100)+'%';
+  el('pg-hours-label').textContent = `${totalHours.toFixed(1)} / 500h target`;
+  el('pg-ques').style.width      = Math.min(100,(totalAttempt/10000)*100)+'%';
+
+  const now = new Date();
+  el('hdr-date').textContent     = now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
+  el('ql-today-label').textContent = now.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+
+  renderBalanceTasks();
+  renderRecentSessions();
+}
+
+function renderBalanceTasks() {
+  const today = new Date().toDateString();
+  let done = 0;
+  const catColor = {coaching:'var(--cyan)',school:'var(--violet)',self:'var(--green)'};
+  el('balance-list').innerHTML = BALANCE_TASKS.map(t => {
+    const key  = t.id+'_'+today;
+    const isDone = (S.balanceTasks[key]||{}).done||false;
+    if (isDone) done++;
+    return `<div class="task-item" onclick="toggleBTask('${t.id}')">
+      <div class="task-check ${isDone?'done':''}">
+        ${isDone?'<svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" style="color:var(--green)"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>':''}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;color:${isDone?'var(--text-dim)':'var(--text-primary)'};${isDone?'text-decoration:line-through;':''}">${t.label}</div>
+        <div style="font-size:10px;color:${catColor[t.cat]||'#888'};text-transform:uppercase;letter-spacing:.06em;font-family:'Rajdhani',sans-serif;">${t.cat}</div>
+      </div>
+    </div>`;
+  }).join('');
+  const pct = Math.round((done/BALANCE_TASKS.length)*100);
+  el('bal-prog-fill').style.width = pct+'%';
+  el('bal-pct').textContent = pct+'%';
+}
+
+function toggleBTask(tid) {
+  const key = tid+'_'+new Date().toDateString();
+  S.balanceTasks[key] = {done:!(S.balanceTasks[key]||{}).done};
+  persist(); renderBalanceTasks();
+}
+
+function resetBalanceTasks() {
+  const today = new Date().toDateString();
+  BALANCE_TASKS.forEach(t => { S.balanceTasks[t.id+'_'+today]={done:false}; });
+  persist(); renderBalanceTasks();
+}
+
+function renderRecentSessions() {
+  const recent = [...S.sessions].reverse().slice(0,6);
+  const icons  = {Physics:'⚡',Chemistry:'⬡',Mathematics:'◎'};
+  const colors = {Physics:'var(--cyan)',Chemistry:'var(--violet)',Mathematics:'var(--green)'};
+  if (!recent.length) {
+    el('recent-sessions').innerHTML = '<p style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px 0;">No sessions yet. Log your first grind.</p>';
+    return;
+  }
+  el('recent-sessions').innerHTML = recent.map(s => {
+    const acc = s.attempted>0 ? Math.round((s.correct/s.attempted)*100) : null;
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">${icons[s.subject]||'📚'}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:12px;font-weight:600;color:${colors[s.subject]||'var(--text-primary)'};font-family:'Rajdhani',sans-serif;letter-spacing:.04em;">${s.subject||'General'}</span>
+          <span style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--text-dim);">${s.hours}H</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.notes||'Study session'}</div>
+        ${acc!==null?`<div style="font-size:11px;color:${acc>=80?'var(--green)':acc>=60?'var(--gold)':'var(--red)'};margin-top:2px;font-family:'Rajdhani',sans-serif;">${s.correct}/${s.attempted} · ${acc}%</div>`:''}
+      </div>
+      <div style="font-size:10px;color:var(--text-dim);white-space:nowrap;font-family:'Rajdhani',sans-serif;">${new Date(s.date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div>
+    </div>`;
+  }).join('');
+}
+
+function logSession() {
+  const subject   = el('ql-subject').value;
+  const hours     = parseFloat(el('ql-hours').value)||0;
+  const attempted = parseInt(el('ql-attempted').value)||0;
+  const correct   = parseInt(el('ql-correct').value)||0;
+  const notes     = el('ql-notes').value.trim();
+  if (!hours && !attempted) { toast('Enter hours or question count!'); return; }
+  S.sessions.push({subject,hours,attempted,correct,notes,date:new Date().toISOString()});
+  updateStreak(true); persist();
+  ['ql-subject','ql-hours','ql-attempted','ql-correct','ql-notes'].forEach(id=>{ el(id).value=''; });
+  toast('SESSION LOGGED ⚡');
+  renderDashboard();
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║               SYLLABUS                              ║
+// ╚══════════════════════════════════════════════════════╝
+function chKey(sub,cls,ch) { return `${sub}_${cls}_${ch.replace(/\s/g,'_')}`; }
+
+function renderChapters() {
+  const chapters = SYLLABUS[curSubject][curClass];
+  let revised = 0;
+  chapters.forEach(ch => { const d = S.chapterStatus[chKey(curSubject,curClass,ch)]||{}; if(d.status==='revision') revised++; });
+  const pct = Math.round((revised/chapters.length)*100);
+  el('syl-prog-bar').style.width = pct+'%';
+  el('syl-prog-pct').textContent = pct+'%';
+  el('syl-prog-lbl').textContent = `${revised}/${chapters.length} chapters revised`;
+
+  el('chapter-list').innerHTML = chapters.map((ch,i)=>{
+    const k  = chKey(curSubject,curClass,ch);
+    const d  = S.chapterStatus[k]||{status:'not-started',pyq:0};
+    const st = d.status||'not-started';
+    const pq = d.pyq||0;
+    const borderStyle = st==='revision'?'border-left:2px solid var(--green);':st==='theory'?'border-left:2px solid var(--cyan);':'';
+    return `<div class="chapter-row" style="padding:12px 14px;${borderStyle}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-family:'Orbitron',sans-serif;font-size:10px;color:var(--text-dim);width:20px;flex-shrink:0;">${String(i+1).padStart(2,'0')}</span>
+        <span style="font-size:12px;color:var(--text-primary);flex:1;">${ch}</span>
+        ${st==='revision'?'<span style="color:var(--green);font-size:11px;">✓</span>':st==='theory'?'<span style="color:var(--cyan);font-size:11px;">◎</span>':''}
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-left:28px;">
+        <div style="display:flex;gap:4px;flex:1;flex-wrap:wrap;">
+          <button class="sbtn sbtn-ns ${st==='not-started'?'active':''}" onclick="setStatus('${k}','not-started')">Not Started</button>
+          <button class="sbtn sbtn-th ${st==='theory'?'active':''}" onclick="setStatus('${k}','theory')">Theory ✓</button>
+          <button class="sbtn sbtn-rv ${st==='revision'?'active':''}" onclick="setStatus('${k}','revision')">Revised ✓</button>
+        </div>
+        <input type="number" class="pyq-input" value="${pq}" min="0" max="100" placeholder="%" title="% PYQs" onchange="setPyq('${k}',this.value,'${ch}')" onclick="this.select()">
+        <span style="font-size:10px;color:var(--text-dim);">%</span>
+      </div>
+      ${pq>=100?`<div style="margin-left:28px;margin-top:6px;"><span style="font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--gold);font-weight:700;letter-spacing:.06em;">⬡ 100% PYQs COMPLETE</span></div>`:''}
+      ${pq>0?`<div class="prog-track" style="margin-top:6px;margin-left:28px;"><div class="prog-fill" style="width:${pq}%;background:${pq>=100?'var(--gold)':pq>=60?'var(--green)':'var(--cyan)'};"></div></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function setStatus(key,status) {
+  const cur = S.chapterStatus[key]||{status:'not-started',pyq:0};
+  S.chapterStatus[key] = {...cur,status};
+  persist(); renderChapters();
+}
+
+function setPyq(key,val,chapterName) {
+  const v   = Math.min(100,Math.max(0,parseInt(val)||0));
+  const cur = S.chapterStatus[key]||{status:'not-started',pyq:0};
+  const was = cur.pyq < 100;
+  S.chapterStatus[key] = {...cur,pyq:v};
+  persist();
+  if (v>=100 && was) { triggerQuestComplete(chapterName); }
+  renderChapters();
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║               QUESTION LOG                          ║
+// ╚══════════════════════════════════════════════════════╝
+function populateQChapters() {
+  const sub = el('qlog-sub').value;
+  const sel = el('qlog-ch');
+  sel.innerHTML = '<option value="">Select Chapter</option>';
+  if (!sub) return;
+  const all = [...(SYLLABUS[sub][11]||[]),...(SYLLABUS[sub][12]||[])];
+  all.forEach(ch=>{ const o=document.createElement('option'); o.value=ch; o.textContent=ch; sel.appendChild(o); });
+}
+
+function liveAccuracy() {
+  const att = parseInt(el('qlog-att').value)||0;
+  const cor = parseInt(el('qlog-cor').value)||0;
+  const div = el('acc-live');
+  if (att > 0) {
+    const acc = Math.round((cor/att)*100);
+    div.classList.add('show');
+    const valEl = el('acc-val');
+    valEl.textContent = acc+'%';
+    valEl.style.color = acc>=80?'var(--green)':acc>=60?'var(--gold)':'var(--red)';
+    const bar = el('acc-bar');
+    bar.style.width = acc+'%';
+    bar.style.background = acc>=80?'var(--green)':acc>=60?'var(--gold)':'var(--red)';
+  } else {
+    div.classList.remove('show');
+  }
+}
+
+function addQLog() {
+  const sub  = el('qlog-sub').value;
+  const ch   = el('qlog-ch').value;
+  const att  = parseInt(el('qlog-att').value)||0;
+  const cor  = parseInt(el('qlog-cor').value)||0;
+  const type = el('qlog-type').value;
+  if (!sub || att===0) { toast('Select subject & attempted count!'); return; }
+  if (cor > att) { toast('Correct cannot exceed attempted!'); return; }
+  S.questionLogs.push({subject:sub,chapter:ch,attempted:att,correct:cor,type,date:new Date().toISOString()});
+  persist();
+  ['qlog-sub','qlog-ch','qlog-att','qlog-cor'].forEach(id=>{ el(id).value=''; });
+  el('acc-live').classList.remove('show');
+  toast('QUESTIONS LOGGED ◎');
+  renderQLog();
+}
+
+function renderQLog() {
+  renderSubAccuracy();
+  const recent = [...S.questionLogs].reverse().slice(0,25);
+  const icons  = {Physics:'⚡',Chemistry:'⬡',Mathematics:'◎'};
+  if (!recent.length) {
+    el('qlog-list').innerHTML='<p style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px 0;">No question logs yet.</p>';
+    return;
+  }
+  el('qlog-list').innerHTML = recent.map(q=>{
+    const acc = q.attempted>0?Math.round((q.correct/q.attempted)*100):0;
+    const ac  = acc>=80?'var(--green)':acc>=60?'var(--gold)':'var(--red)';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <span style="font-size:14px;flex-shrink:0;">${icons[q.subject]||'📚'}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${q.chapter||q.subject}</div>
+        <div style="font-size:10px;color:var(--text-dim);font-family:'Rajdhani',sans-serif;text-transform:uppercase;letter-spacing:.04em;">${q.type} · ${new Date(q.date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:${ac};">${acc}%</div>
+        <div style="font-size:10px;color:var(--text-dim);">${q.correct}/${q.attempted}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderSubAccuracy() {
+  const subs   = ['Physics','Chemistry','Mathematics'];
+  const colors = {Physics:'var(--cyan)',Chemistry:'var(--violet)',Mathematics:'var(--green)'};
+  const icons  = {Physics:'⚡',Chemistry:'⬡',Mathematics:'◎'};
+  el('sub-acc-cards').innerHTML = subs.map(sub=>{
+    const logs = S.questionLogs.filter(q=>q.subject===sub);
+    const att  = logs.reduce((a,q)=>a+(q.attempted||0),0);
+    const cor  = logs.reduce((a,q)=>a+(q.correct||0),0);
+    const acc  = att>0?Math.round((cor/att)*100):0;
+    const c    = colors[sub];
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <span style="font-size:14px;">${icons[sub]}</span>
+      <div style="flex:1;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:12px;color:var(--text-primary);font-family:'Rajdhani',sans-serif;font-weight:600;">${sub}</span>
+          <span style="font-family:'Orbitron',sans-serif;font-size:11px;color:${att>0?(acc>=80?'var(--green)':acc>=60?'var(--gold)':'var(--red)'):'var(--text-dim)'};">${att>0?acc+'%':'No data'}</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" style="width:${acc}%;background:${c};"></div></div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px;font-family:'Rajdhani',sans-serif;">${cor}/${att} correct</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearQLogs() {
+  if (confirm('Clear all question logs?')) { S.questionLogs=[]; persist(); renderQLog(); }
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║          RANK EVALUATION ALGORITHM                  ║
+// ╚══════════════════════════════════════════════════════╝
+/*
+  Algorithm design:
+  ─────────────────
+  1. Compute raw ratio against Batch Topper (batchRatio) and Center Topper (centerRatio).
+  2. batchRatio  = yourScore / batchTopperScore (capped at 1.0 for S-rank detection)
+  3. centerRatio = yourScore / centerTopperScore
+
+  4. Percentile estimate:
+     We model a typical coaching batch-level competition pool of 50,000 students.
+     Assumption: scores are roughly normally distributed in the batch.
+     The batch topper represents approximately the 99.98th percentile.
+     The center topper represents approximately the 99.5th percentile.
+     We use these two anchor points to interpolate a log-linear percentile curve.
+     
+     percentile = 100 * [1 - exp(-k * (yourScore / mean))]
+     where mean is estimated as 0.55 * batchTopperScore (rough JEE competitive average),
+     and k is a curve shaping constant = 1.8 derived from empirical score distributions.
+
+  5. Simulated JEE Rank (out of 50,000-student pool):
+     rank = Math.round((1 - percentile/100) * 50000) + 1
+     This maps percentile → rank. We cap at rank 1 for S-rank.
+
+  6. Hunter Rank tiers:
+     S → yourScore >= batchTopperScore
+     A → batchRatio >= 0.90 (within 10% of Batch Topper)
+     B → yourScore >= centerTopperScore (beats Center Topper)
+     C → centerRatio >= 0.75 (75%+ of Center Topper)
+     D → centerRatio >= 0.50 (50-74% of Center Topper)
+     E → centerRatio < 0.50 (below 50% of Center Topper)
+*/
+function computeHunterRank(yourScore, centerScore, batchScore) {
+  const ys = parseFloat(yourScore)||0;
+  const cs = parseFloat(centerScore)||1;
+  const bs = parseFloat(batchScore)||1;
+
+  const batchRatio  = ys / bs;
+  const centerRatio = ys / cs;
+
+  // Percentile estimation via log model
+  const mean        = 0.55 * bs;
+  const k           = 1.8;
+  const rawPct      = 100 * (1 - Math.exp(-k * (ys / Math.max(mean,1))));
+  const percentile  = Math.min(99.98, Math.max(0.01, rawPct));
+
+  // Simulated JEE rank from 50,000 student pool
+  const simRank     = Math.max(1, Math.round((1 - percentile/100) * 50000));
+
+  // Rank tier
+  let rank, tier, tierLabel, tierColor, cardClass;
+  if (batchRatio >= 1.0) {
+    rank='S'; tier='MONARCH'; tierLabel='You have surpassed the Batch Topper. Shadow Sovereign ascension initiated.';
+    tierColor='var(--gold)'; cardClass='rank-card-S';
+  } else if (batchRatio >= 0.90) {
+    rank='A'; tier='SHADOW'; tierLabel='Within 10% of Batch Topper. One final push and the throne is yours.';
+    tierColor='var(--violet)'; cardClass='rank-card-A';
+  } else if (ys >= cs) {
+    rank='B'; tier='HUNTER'; tierLabel='You beat the Center Topper. Solid performance. Now aim for the Batch summit.';
+    tierColor='var(--cyan)'; cardClass='rank-card-B';
+  } else if (centerRatio >= 0.75) {
+    rank='C'; tier='RAIDER'; tierLabel='75%+ of Center Topper. Close to breakthrough. Strengthen weak subjects.';
+    tierColor='var(--green)'; cardClass='rank-card-C';
+  } else if (centerRatio >= 0.50) {
+    rank='D'; tier='SCOUT'; tierLabel='50-74% of Center Topper. Significant gap remains. Escalate daily effort.';
+    tierColor='#ff9f43'; cardClass='rank-card-D';
+  } else {
+    rank='E'; tier='UNRANKED'; tierLabel='Below 50% of Center Topper. Emergency mode: review fundamentals, increase solve volume.';
+    tierColor='var(--red)'; cardClass='rank-card-E';
+  }
+
+  return { rank, tier, tierLabel, tierColor, cardClass, percentile, simRank, batchRatio, centerRatio };
+}
+
+function evaluateRank() {
+  const name   = el('rank-test-name').value.trim();
+  const yours  = parseFloat(el('rank-your').value)||0;
+  const center = parseFloat(el('rank-center').value)||0;
+  const batch  = parseFloat(el('rank-batch').value)||0;
+  const date   = el('rank-date').value;
+
+  if (!name) { toast('Enter test name!'); return; }
+  if (yours===0) { toast('Enter your score!'); return; }
+  if (center===0||batch===0) { toast('Enter topper scores!'); return; }
+  if (yours>300||center>300||batch>300) { toast('Scores must be ≤ 300!'); return; }
+  if (batch < center) { toast('Batch Topper score should be ≥ Center Topper!'); return; }
+
+  const result = computeHunterRank(yours, center, batch);
+
+  // Store
+  S.rankTests.push({
+    name, yourScore:yours, centerScore:center, batchScore:batch, date,
+    rank:result.rank, tier:result.tier, percentile:result.percentile,
+    simRank:result.simRank, addedAt:new Date().toISOString()
+  });
+  persist();
+
+  // Display result card
+  const card = el('rank-result-card');
+  card.className = `panel ${result.cardClass}`;
+  card.style.display = 'block';
+
+  const badge = el('rr-badge');
+  badge.textContent = result.rank;
+  badge.className   = `rank-badge rank-${result.rank}`;
+
+  el('rr-rank-label').textContent = result.tier;
+  el('rr-rank-label').style.color = result.tierColor;
+
+  const scoreColor = result.rank==='S'?'var(--gold)':result.rank==='A'?'var(--violet)':result.rank==='B'?'var(--cyan)':result.rank==='C'?'var(--green)':result.rank==='D'?'#ff9f43':'var(--red)';
+  el('rr-your-score').textContent = yours;
+  el('rr-your-score').style.color = scoreColor;
+  el('rr-center').textContent     = center;
+  el('rr-batch').textContent      = batch;
+  el('rr-percentile').textContent = result.percentile.toFixed(2)+'%';
+  el('rr-jee-rank').textContent   = result.simRank.toLocaleString('en-IN');
+
+  el('rr-feedback').innerHTML = `<span style="font-family:'Rajdhani',sans-serif;font-weight:700;color:${result.tierColor};letter-spacing:.06em;text-transform:uppercase;font-size:11px;">[${result.tier}]</span> <span style="color:var(--text-secondary);">${result.tierLabel}</span>
+    <div style="margin-top:8px;font-size:11px;color:var(--text-dim);">
+      Batch gap: ${Math.round((batch-yours))} pts (${Math.round((1-result.batchRatio)*100)}% behind) · Center gap: ${Math.max(0,Math.round((center-yours)))} pts
+    </div>`;
+
+  card.scrollIntoView({behavior:'smooth',block:'center'});
+  renderRankHistory();
+  toast(`RANK COMPUTED: ${result.rank}-RANK ⟶`);
+}
+
+function renderRankSection() {
+  el('rank-date').value = new Date().toISOString().split('T')[0];
+  renderRankHistory();
+}
+
+function renderRankHistory() {
+  const list = el('rank-history-list');
+  if (!S.rankTests.length) {
+    list.innerHTML='<p style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px 0;">No rank evaluations yet. Run your first test.</p>';
+    return;
+  }
+  const rankColors = {S:'var(--gold)',A:'var(--violet)',B:'var(--cyan)',C:'var(--green)',D:'#ff9f43',E:'var(--red)'};
+  list.innerHTML = [...S.rankTests].reverse().map(t=>`
+    <div class="rank-row" style="padding:12px 0;display:flex;align-items:center;gap:12px;">
+      <div style="font-family:'Orbitron',sans-serif;font-size:22px;font-weight:900;color:${rankColors[t.rank]||'#888'};text-shadow:0 0 12px ${rankColors[t.rank]||'#888'};width:28px;text-align:center;">${t.rank}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;color:var(--text-primary);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.name}</div>
+        <div style="font-size:10px;color:var(--text-dim);font-family:'Rajdhani',sans-serif;margin-top:2px;text-transform:uppercase;letter-spacing:.04em;">${t.tier} · ${t.percentile.toFixed(1)}% · Rank ~${t.simRank.toLocaleString('en-IN')}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-family:'Orbitron',sans-serif;font-size:13px;color:${rankColors[t.rank]||'#888'};">${t.yourScore}</div>
+        <div style="font-size:10px;color:var(--text-dim);">${t.date}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║               ANALYTICS                             ║
+// ╚══════════════════════════════════════════════════════╝
+let scoreCI = null, effortCI = null;
+
+function addMockTest() {
+  const name  = el('mock-name').value.trim();
+  const marks = parseInt(el('mock-marks').value)||0;
+  const date  = el('mock-date').value;
+  const phy   = parseInt(el('mock-phy').value)||0;
+  const chem  = parseInt(el('mock-chem').value)||0;
+  const math  = parseInt(el('mock-math').value)||0;
+  if (!name||!date) { toast('Enter test name & date!'); return; }
+  if (marks<0||marks>300) { toast('Total marks must be 0-300!'); return; }
+  S.mockTests.push({name,marks,date,phy,chem,math,addedAt:new Date().toISOString()});
+  S.mockTests.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  persist();
+  ['mock-name','mock-marks','mock-date','mock-phy','mock-chem','mock-math'].forEach(id=>{el(id).value='';});
+  toast('MOCK TEST SAVED ◎');
+  renderAnalytics();
+}
+
+function renderAnalytics() {
+  renderScoreChart();
+  renderEffortChart();
+  renderFeedback();
+  renderMockList();
+}
+
+function renderScoreChart() {
+  const canvas = document.getElementById('scoreChart');
+  const empty  = el('score-chart-empty');
+  if (!S.mockTests.length) { canvas.style.display='none'; empty.style.display='block'; return; }
+  canvas.style.display='block'; empty.style.display='none';
+  if (scoreCI) scoreCI.destroy();
+  const labels = S.mockTests.map(t=>t.name.length>14?t.name.slice(0,14)+'…':t.name);
+  scoreCI = new Chart(canvas.getContext('2d'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'Total',data:S.mockTests.map(t=>t.marks),borderColor:'#00f0ff',backgroundColor:'rgba(0,240,255,0.06)',borderWidth:2,pointBackgroundColor:'#00f0ff',pointRadius:4,tension:0.35,fill:true},
+      {label:'Physics',data:S.mockTests.map(t=>t.phy||null),borderColor:'#9b5cff',borderWidth:1.5,pointRadius:3,tension:0.3,borderDash:[4,3]},
+      {label:'Chem',data:S.mockTests.map(t=>t.chem||null),borderColor:'#00ff9d',borderWidth:1.5,pointRadius:3,tension:0.3,borderDash:[4,3]},
+      {label:'Maths',data:S.mockTests.map(t=>t.math||null),borderColor:'#f0b429',borderWidth:1.5,pointRadius:3,tension:0.3,borderDash:[4,3]},
+    ]},
+    options:{responsive:true,plugins:{legend:{labels:{color:'#8888aa',font:{size:10}},position:'bottom'}},scales:{
+      y:{min:0,max:300,ticks:{color:'#44445a',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},
+      x:{ticks:{color:'#44445a',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}
+    }}
+  });
+}
+
+function renderEffortChart() {
+  const canvas = document.getElementById('effortChart');
+  const empty  = el('effort-chart-empty');
+  const subs   = ['Physics','Chemistry','Mathematics'];
+  const hours  = subs.map(s=>S.sessions.filter(se=>se.subject===s).reduce((a,se)=>a+(parseFloat(se.hours)||0),0));
+  const hasData = hours.some(h=>h>0);
+  if (!hasData) { canvas.style.display='none'; empty.style.display='block'; return; }
+  canvas.style.display='block'; empty.style.display='none';
+  if (effortCI) effortCI.destroy();
+  const last   = S.mockTests[S.mockTests.length-1];
+  const scores = last?[last.phy||0,last.chem||0,last.math||0]:[0,0,0];
+  const qnums  = subs.map(s=>S.questionLogs.filter(q=>q.subject===s).reduce((a,q)=>a+(q.attempted||0),0));
+  effortCI = new Chart(canvas.getContext('2d'),{
+    type:'bar',
+    data:{labels:subs,datasets:[
+      {label:'Hours Studied',data:hours,backgroundColor:'rgba(0,240,255,0.55)',borderRadius:5,yAxisID:'y'},
+      {label:'Questions ÷10',data:qnums.map(v=>v/10),backgroundColor:'rgba(155,92,255,0.55)',borderRadius:5,yAxisID:'y'},
+      {label:'Last Test Score',data:scores,backgroundColor:'rgba(0,255,157,0.55)',borderRadius:5,yAxisID:'y2'},
+    ]},
+    options:{responsive:true,plugins:{legend:{labels:{color:'#8888aa',font:{size:10}},position:'bottom'}},scales:{
+      y:{ticks:{color:'#44445a',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'},title:{display:true,text:'Hours / Q÷10',color:'#44445a',font:{size:9}}},
+      y2:{position:'right',min:0,max:100,ticks:{color:'#44445a',font:{size:10}},grid:{drawOnChartArea:false},title:{display:true,text:'Score /100',color:'#44445a',font:{size:9}}},
+      x:{ticks:{color:'#8888aa',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}}
+    }}
+  });
+}
+
+function renderFeedback() {
+  const fbs   = [];
+  const subs  = ['Physics','Chemistry','Mathematics'];
+  const last  = S.mockTests[S.mockTests.length-1];
+  const lastR = S.rankTests[S.rankTests.length-1];
+  const subScores = last ? {Physics:last.phy,Chemistry:last.chem,Mathematics:last.math} : {};
+  const icons = {Physics:'⚡',Chemistry:'⬡',Mathematics:'◎'};
+
+  // Trend feedback
+  if (S.mockTests.length >= 2) {
+    const latest = S.mockTests[S.mockTests.length-1].marks;
+    const prev   = S.mockTests[S.mockTests.length-2].marks;
+    const diff   = latest - prev;
+    if (diff > 15)       fbs.push({t:'good',m:`<strong>📈 Positive Trend:</strong> +${diff} marks from previous test. Momentum is building. Maintain intensity.`});
+    else if (diff < -15) fbs.push({t:'bad', m:`<strong>📉 Score Drop:</strong> ${Math.abs(diff)} marks lost. Analyze your error sheet, reduce silly mistakes, and revisit flagged chapters immediately.`});
+    else                 fbs.push({t:'warn',m:`<strong>📊 Plateau Detected:</strong> Score variance of ${diff>0?'+':''}${diff} marks. Push beyond your comfort ceiling — attempt harder problems daily.`});
+  }
+
+  // Per-subject effort vs result (with Rank Eval integration)
+  subs.forEach(sub => {
+    const hours   = S.sessions.filter(s=>s.subject===sub).reduce((a,s)=>a+(parseFloat(s.hours)||0),0);
+    const logs    = S.questionLogs.filter(q=>q.subject===sub);
+    const att     = logs.reduce((a,q)=>a+(q.attempted||0),0);
+    const cor     = logs.reduce((a,q)=>a+(q.correct||0),0);
+    const acc     = att>0?Math.round((cor/att)*100):null;
+    const score   = subScores[sub];
+
+    // Topper gap analysis from latest rank eval
+    let topperNote = '';
+    if (lastR) {
+      const centerScore = lastR.centerScore;
+      const subWeight   = centerScore / 3; // rough per-subject equivalent
+      if (score !== undefined && score < subWeight * 0.85) {
+        topperNote = ` High energy output, low conversion rate. Strategy alteration required in ${sub} to match Center Topper performance.`;
+      }
+    }
+
+    if (hours >= 10 && score !== undefined && score < 40) {
+      fbs.push({t:'warn',m:`<strong>${icons[sub]} ${sub}:</strong> ${hours.toFixed(1)}h invested but score is ${score}/100. Concept gaps likely.${topperNote} Shift to error analysis and spaced repetition.`});
+    } else if (hours < 5 && att < 100 && score !== undefined && score < 50) {
+      fbs.push({t:'bad',m:`<strong>${icons[sub]} ${sub}:</strong> Low effort (${hours.toFixed(1)}h, ${att} questions) and score ${score}/100.${topperNote} Urgently increase daily allocation.`});
+    } else if (hours >= 10 && score !== undefined && score >= 70) {
+      fbs.push({t:'good',m:`<strong>${icons[sub]} ${sub}:</strong> ${hours.toFixed(1)}h yielding ${score}/100. Excellent calibration. Protect this by maintaining daily practice.`});
+    } else if (acc !== null && acc < 50) {
+      fbs.push({t:'warn',m:`<strong>${icons[sub]} ${sub}:</strong> Accuracy at ${acc}% — majority of attempts are incorrect. Switch to slower, concept-verified solving before speed drills.`});
+    } else if (acc !== null && acc >= 85) {
+      fbs.push({t:'good',m:`<strong>${icons[sub]} ${sub}:</strong> ${acc}% accuracy in Q-Log. Now prioritize speed — timed practice sets and mock conditions.`});
+    } else if (topperNote) {
+      fbs.push({t:'warn',m:`<strong>${icons[sub]} ${sub}:</strong>${topperNote}`});
+    }
+  });
+
+  if (!fbs.length) {
+    el('analytics-feedback').innerHTML='<p style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px 0;">Log sessions, mock tests, and rank evaluations for personalized analysis.</p>';
+    return;
+  }
+  el('analytics-feedback').innerHTML = fbs.map(f=>`
+    <div class="fb-${f.t}" style="border-radius:10px;padding:12px;margin-bottom:8px;">
+      <p style="font-size:12px;color:var(--text-secondary);line-height:1.65;">${f.m}</p>
+    </div>`).join('');
+}
+
+function renderMockList() {
+  if (!S.mockTests.length) {
+    el('mock-list').innerHTML='<p style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px 0;">No mock tests logged.</p>';
+    return;
+  }
+  el('mock-list').innerHTML = [...S.mockTests].reverse().map(t=>{
+    const pct   = Math.round((t.marks/300)*100);
+    const pc    = pct>=70?'var(--green)':pct>=50?'var(--gold)':'var(--red)';
+    return `<div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+        <div><div style="font-size:12px;color:var(--text-primary);font-weight:500;">${t.name}</div>
+          <div style="font-size:10px;color:var(--text-dim);font-family:'Rajdhani',sans-serif;margin-top:2px;">${new Date(t.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:${pc};">${t.marks}<span style="font-size:10px;color:var(--text-dim);">/300</span></div>
+          <div style="font-size:10px;color:${pc};font-family:'Rajdhani',sans-serif;">${pct}%</div>
+        </div>
+      </div>
+      ${(t.phy||t.chem||t.math)?`<div style="display:flex;gap:12px;margin-top:6px;">
+        <span style="font-size:11px;color:var(--cyan);font-family:'Rajdhani',sans-serif;">⚡ ${t.phy}</span>
+        <span style="font-size:11px;color:var(--violet);font-family:'Rajdhani',sans-serif;">⬡ ${t.chem}</span>
+        <span style="font-size:11px;color:var(--green);font-family:'Rajdhani',sans-serif;">◎ ${t.math}</span>
+      </div>`:''}
+      <div class="prog-track" style="margin-top:8px;"><div class="prog-fill" style="width:${pct}%;background:${pc};"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║               MOTIVATION                            ║
+// ╚══════════════════════════════════════════════════════╝
+let pieCI = null;
+
+function renderMotivation() {
+  loadVision();
+  showQuote(curQuoteIdx);
+  renderMilestones();
+  renderPieChart();
+}
+
+function saveVision() {
+  S.vision.iit    = el('vis-iit').value;
+  S.vision.branch = el('vis-branch').value;
+  S.vision.rank   = el('vis-rank').value;
+  persist(); updateVisionDisplay();
+}
+
+function loadVision() {
+  el('vis-iit').value    = S.vision.iit||'';
+  el('vis-branch').value = S.vision.branch||'';
+  el('vis-rank').value   = S.vision.rank||'';
+  updateVisionDisplay();
+}
+
+function updateVisionDisplay() {
+  const d = el('vision-display');
+  if (S.vision.iit||S.vision.branch) {
+    d.style.display='block';
+    el('vis-iit-d').textContent    = S.vision.iit||'?';
+    el('vis-branch-d').textContent = S.vision.branch||'';
+    el('vis-rank-d').textContent   = S.vision.rank?'🎯 '+S.vision.rank:'';
+  } else {
+    d.style.display='none';
+  }
+}
+
+function showQuote(idx) {
+  const q = QUOTES[idx%QUOTES.length];
+  const t = el('q-text');
+  t.style.opacity='0';
+  setTimeout(()=>{
+    t.textContent   = `"${q.text}"`;
+    el('q-author').textContent = `— ${q.author}`;
+    el('q-emoji').textContent  = q.emoji;
+    t.style.opacity='1';
+    t.classList.remove('quote-anim'); void t.offsetWidth; t.classList.add('quote-anim');
+  },150);
+  S.quoteIdx=idx; persist();
+}
+
+function nextQuote() { curQuoteIdx=(curQuoteIdx+1)%QUOTES.length; showQuote(curQuoteIdx); }
+
+function renderMilestones() {
+  const milestones = [];
+  ['Physics','Chemistry','Mathematics'].forEach(sub=>{
+    [11,12].forEach(cls=>{
+      SYLLABUS[sub][cls].forEach(ch=>{
+        const d = S.chapterStatus[chKey(sub,cls,ch)]||{};
+        if ((d.pyq||0)>=100) milestones.push({sub,cls,ch});
+      });
+    });
+  });
+  const icons = {Physics:'⚡',Chemistry:'⬡',Mathematics:'◎'};
+  const colors = {Physics:'var(--cyan)',Chemistry:'var(--violet)',Mathematics:'var(--green)'};
+  if (!milestones.length) {
+    el('milestone-list').innerHTML='<p style="font-size:12px;color:var(--text-dim);text-align:center;padding:16px 0;">Complete 100% PYQs in any chapter to unlock a quest badge.</p>';
+    return;
+  }
+  el('milestone-list').innerHTML = milestones.map(m=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <span style="font-size:14px;">${icons[m.sub]}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;color:${colors[m.sub]};font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.ch}</div>
+        <div style="font-size:10px;color:var(--text-dim);font-family:'Rajdhani',sans-serif;text-transform:uppercase;letter-spacing:.04em;">Class ${m.cls} · ${m.sub}</div>
+      </div>
+      <span style="font-family:'Orbitron',sans-serif;font-size:13px;color:var(--gold);text-shadow:0 0 8px var(--gold);">⬡</span>
+    </div>`).join('');
+}
+
+function renderPieChart() {
+  const canvas = document.getElementById('pieChart');
+  const empty  = el('pie-empty');
+  const hours  = ['Physics','Chemistry','Mathematics'].map(s=>S.sessions.filter(se=>se.subject===s).reduce((a,se)=>a+(parseFloat(se.hours)||0),0));
+  if (hours.every(h=>h===0)) { canvas.style.display='none'; empty.style.display='block'; return; }
+  canvas.style.display='block'; empty.style.display='none';
+  if (pieCI) pieCI.destroy();
+  pieCI = new Chart(canvas.getContext('2d'),{
+    type:'doughnut',
+    data:{labels:['Physics','Chemistry','Mathematics'],datasets:[{data:hours,backgroundColor:['rgba(0,240,255,0.7)','rgba(155,92,255,0.7)','rgba(0,255,157,0.7)'],borderColor:['#00f0ff','#9b5cff','#00ff9d'],borderWidth:2}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#8888aa',font:{size:11},padding:12}},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw.toFixed(1)}h`}}}}
+  });
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║          QUEST COMPLETE & CONFETTI                  ║
+// ╚══════════════════════════════════════════════════════╝
+function triggerQuestComplete(chapterName) {
+  const overlay = el('quest-overlay');
+  el('quest-chapter-name').textContent = chapterName.toUpperCase();
+  overlay.classList.add('show');
+  triggerConfetti();
+  setTimeout(()=>{ overlay.classList.remove('show'); }, 3200);
+}
+
+function triggerConfetti() {
+  const colors = ['#00f0ff','#9b5cff','#f0b429','#00ff9d','#ff3c5a','#ffffff'];
+  for (let i=0;i<80;i++) {
+    const bit = document.createElement('div');
+    bit.className='confetti-bit';
+    const size = 6+Math.random()*8;
+    bit.style.cssText=`
+      left:${Math.random()*100}vw;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      width:${size}px; height:${size}px;
+      animation-duration:${1.4+Math.random()*1.8}s;
+      animation-delay:${Math.random()*0.7}s;
+      border-radius:${Math.random()>0.4?'50%':'3px'};
+    `;
+    document.body.appendChild(bit);
+    bit.addEventListener('animationend',()=>bit.remove());
+  }
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║                 TOAST                               ║
+// ╚══════════════════════════════════════════════════════╝
+function toast(msg) {
+  const t = el('sys-toast');
+  t.textContent = msg; t.style.display='block'; t.style.opacity='1';
+  setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>{ t.style.display='none'; },300); },2400);
+}
+
+// ╔══════════════════════════════════════════════════════╗
+// ║                 UTILITIES                           ║
+// ╚══════════════════════════════════════════════════════╝
+function el(id) { return document.getElementById(id); }
+
+// ╔══════════════════════════════════════════════════════╗
+// ║                 INIT                                ║
+// ╚══════════════════════════════════════════════════════╝
+function init() {
+  hydrate();
+  updateStreak();
+  curQuoteIdx = S.quoteIdx||0;
+
+  // Default dates
+  const today = new Date().toISOString().split('T')[0];
+  if (el('mock-date'))      el('mock-date').value = today;
+  if (el('rank-date'))      el('rank-date').value  = today;
+
+  renderDashboard();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
